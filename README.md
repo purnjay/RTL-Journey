@@ -1,9 +1,10 @@
 # Learning FPGA Dev
 
 RTL building blocks I am writing from scratch in Verilog, on the way to a single cycle processor
-core running a custom ISA. Combinational/ has the blocks that are just logic and Sequential/ has
+core running RV32I, the base 32 bit RISC-V instruction set. Combinational/ has the blocks that are just logic and Sequential/ has
 the ones that hold state. Each folder inside them is one piece of the datapath with its design
-file, a testbench for it, and usually a waveform dump.
+file, a testbench for it, and usually a waveform dump. FSMs/ has the state machines, which aren't
+part of the datapath but the control unit is going to be one.
 
 Everything is simulated with Icarus Verilog and viewed in GTKWave out of the OSS CAD Suite. Once
 the core is together the plan is to take it through logic synthesis and place and route with
@@ -13,7 +14,7 @@ Phase 1 is done. All the combinational blocks are built, they come together in t
 ALU has a testbench of its own. Phase 2 is sequential and it has started, the latches, the D, JK
 and T flip flops, an N bit register, the SISO, SIPO, PISO and PIPO shift registers, a
 bi-directional shift register, up/down, ring, Johnson and mod N counters, and the register file
-are done so far.
+are done so far. After that I did a Mealy and a Moore sequence detector to get FSMs down.
 
 ## Running a testbench
 
@@ -109,6 +110,16 @@ out of the one before it. All three flip flops are in the Flip Flop folder.
 | Counters | `mod_n_counter` | `modn_tb.v` | Counts from 0 up to N-1 and then goes back to 0. The width is $clog2(N) so it is only as wide as it needs to be. |
 | Capstone_Register | `REGISTER` | `register_tb.v` | Register file, 8 registers of 8 bits made from the N bit register, the decoder picks which one gets written and there are two read ports. Reading address 0 always gives 0. The testbench runs it at 32 registers of 32 bits. |
 
+## State machines
+
+All of these live in FSMs/. Both have a clocked always block for the state with a synchronous
+reset and a combinational one for the next state.
+
+| Folder | Module | Testbench | What it does |
+| --- | --- | --- | --- |
+| FSMs | `mealy_seq_detect` | `mealy_tb.v` | Mealy sequence detector for 1011 with overlap. The output depends on the state and the input, so it only needs 4 states. |
+| FSMs | `moore_seqdetect` | `mooreTB.v` | Moore sequence detector, the 4 bit sequence comes in on correct_seq. The output only depends on the state so it needs 5, and any wrong bit goes back to S0. |
+
 ## Notes to self
 
 The testbenches mostly don't check themselves. They print with $monitor or $display and I compare
@@ -123,7 +134,8 @@ Where the width is the interesting part (adder, decoder, comparator) the module 
 parameter N and the testbench picks the actual width when it instantiates it. Keeping them
 parameterized means I can pull the same modules into the datapath without rewriting them, which
 is what add_sub does when it instantiates the ripple carry adder at N = 8. The units that are
-part of the datapath itself are just fixed at 8 bits since that is the width I am building to.
+part of the datapath itself are fixed at 8 bits for now, they need to go up to 32 bits for the
+RISC-V core.
 
 The latches and the D flip flop don't have a reset, so Q sits at x in simulation until something
 actually gets written into it. The JK and T ones do, both synchronous, so the reset only takes
@@ -139,11 +151,17 @@ this never came up before.
 
 ## What is next
 
-Fold the barrel shifter into the ALU as shift opcodes on the two unused op codes, since it is
-built and tested but nothing calls it yet.
+The core is going to be a single cycle RV32I, so the ALU and the barrel shifter have to go from
+8 bits up to 32. The ALU also needs a 4 bit op since RV32I has ADD, SUB, AND, OR, XOR, SLL, SRL,
+SRA, SLT and SLTU. The barrel shifter needs to shift by 0 to 31 and shift right too, both logical
+and arithmetic, and then it goes into the ALU. RISC-V has no flags, branches compare two
+registers directly, so the comparator turns into the branch unit.
 
-The register file is done, so next is the
-core itself. A minimal custom ISA of about 8 to 10 instructions, then a single
-cycle implementation wiring the datapath to a control unit built on the decoder. cocotb
-testbenches to verify it properly, then Yosys and nextpnr to get it synthesized and placed and
-routed.
+The register file already matches, 32 registers of 32 bits with x0 always reading 0. What is left
+to build is the program counter, the immediate generator, instruction and data memory, the
+control unit and the next PC logic for branches and jumps. I am going to get R type instructions
+working first, then I type, then loads and stores, then branches and jumps.
+
+Since it is standard RISC-V I can compile real programs with the RISC-V GCC toolchain and check
+the core against the official riscv-tests. Then cocotb testbenches, and Yosys and nextpnr to get
+it synthesized and placed and routed.
