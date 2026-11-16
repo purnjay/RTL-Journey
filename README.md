@@ -14,7 +14,8 @@ Phase 1 is done. All the combinational blocks are built, they come together in t
 ALU has a testbench of its own. Phase 2 is sequential and it has started, the latches, the D, JK
 and T flip flops, an N bit register, the SISO, SIPO, PISO and PIPO shift registers, a
 bi-directional shift register, up/down, ring, Johnson and mod N counters, and the register file
-are done so far. After that I did a Mealy and a Moore sequence detector to get FSMs down.
+are done so far. After that I did a Mealy and a Moore sequence detector and a traffic light to get FSMs
+down.
 
 ## Running a testbench
 
@@ -112,13 +113,14 @@ out of the one before it. All three flip flops are in the Flip Flop folder.
 
 ## State machines
 
-All of these live in FSMs/. Both have a clocked always block for the state with a synchronous
+All of these live in FSMs/. They all have a clocked always block for the state with a synchronous
 reset and a combinational one for the next state.
 
 | Folder | Module | Testbench | What it does |
 | --- | --- | --- | --- |
 | FSMs | `mealy_seq_detect` | `mealy_tb.v` | Mealy sequence detector for 1011 with overlap. The output depends on the state and the input, so it only needs 4 states. |
 | FSMs | `moore_seqdetect` | `mooreTB.v` | Moore sequence detector, the 4 bit sequence comes in on correct_seq. The output only depends on the state so it needs 5, and any wrong bit goes back to S0. |
+| FSMs | `traffic_light_intersection` | `Traffic_light_tb.v` | Traffic light for an intersection with two states, NS green and EW green. The light switches when a car is waiting on the red side, so with cars on both sides it flips every clock. |
 
 ## Notes to self
 

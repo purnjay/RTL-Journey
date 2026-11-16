@@ -1,0 +1,138 @@
+$date
+	Sun Nov 15 19:16:35 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tl_tb $end
+$var wire 1 ! NSlite $end
+$var wire 1 " EWlite $end
+$var reg 1 # EWcar $end
+$var reg 1 $ NScar $end
+$var reg 1 % clk $end
+$var reg 1 & rst $end
+$scope module t0 $end
+$var wire 1 # EWcar $end
+$var wire 1 $ NScar $end
+$var wire 1 % clk $end
+$var wire 1 & rst $end
+$var wire 2 ' traffic_code [1:0] $end
+$var wire 1 ! NSlite $end
+$var wire 1 " EWlite $end
+$var parameter 1 ( EWgreen $end
+$var parameter 1 ) NSgreen $end
+$var reg 1 * curr_state $end
+$var reg 1 + next_state $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+0)
+1(
+$end
+#0
+$dumpvars
+x+
+x*
+b0 '
+0&
+0%
+0$
+0#
+x"
+x!
+$end
+#5
+0"
+1!
+0+
+0*
+1&
+1%
+#10
+0%
+#15
+1%
+0&
+#20
+0%
+#25
+1%
+#30
+0%
+#35
+1"
+0!
+1*
+1+
+1%
+b1 '
+1#
+#40
+0%
+#45
+0"
+1!
+0*
+0+
+1%
+0#
+b10 '
+1$
+#50
+0%
+#55
+1"
+0!
+1*
+0+
+1%
+b11 '
+1#
+#60
+0%
+#65
+1+
+1%
+0#
+b0 '
+0$
+#70
+0%
+#75
+1%
+b1 '
+1#
+#80
+0%
+#85
+0"
+1!
+0*
+0+
+1%
+0#
+b10 '
+1$
+#90
+0%
+#95
+1"
+0!
+1*
+0+
+1%
+b11 '
+1#
+#100
+0%
+#105
+0"
+1!
+1+
+0*
+1%

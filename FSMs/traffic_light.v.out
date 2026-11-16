@@ -1,0 +1,166 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1539-g2693dd32b)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "C:\iverilog\lib\ivl\system.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\va_math.vpi";
+S_0000020f55422ce0 .scope module, "traffic_light_intersection" "traffic_light_intersection" 2 1;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk";
+    .port_info 1 /INPUT 1 "rst";
+    .port_info 2 /INPUT 1 "NScar";
+    .port_info 3 /INPUT 1 "EWcar";
+    .port_info 4 /OUTPUT 1 "NSlite";
+    .port_info 5 /OUTPUT 1 "EWlite";
+P_0000020f55423780 .param/l "EWgreen" 1 2 10, C4<1>;
+P_0000020f554237b8 .param/l "NSgreen" 1 2 10, C4<0>;
+L_0000020f554a2048 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+L_0000020f5540b060 .functor XNOR 1, v0000020f55453900_0, L_0000020f554a2048, C4<0>, C4<0>;
+L_0000020f554a2120 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+L_0000020f55423560 .functor XNOR 1, v0000020f55453900_0, L_0000020f554a2120, C4<0>, C4<0>;
+o0000020f55458fa8 .functor BUFZ 1, C4<z>; HiZ drive
+v0000020f5540afc0_0 .net "EWcar", 0 0, o0000020f55458fa8;  0 drivers
+v0000020f55422e70_0 .net "EWlite", 0 0, L_0000020f55453f40;  1 drivers
+o0000020f55459008 .functor BUFZ 1, C4<z>; HiZ drive
+v0000020f55422f10_0 .net "NScar", 0 0, o0000020f55459008;  0 drivers
+v0000020f55422fb0_0 .net "NSlite", 0 0, L_0000020f554537c0;  1 drivers
+v0000020f55423050_0 .net/2u *"_ivl_12", 0 0, L_0000020f554a2120;  1 drivers
+v0000020f55453ae0_0 .net *"_ivl_14", 0 0, L_0000020f55423560;  1 drivers
+L_0000020f554a2168 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v0000020f55453c20_0 .net/2u *"_ivl_16", 0 0, L_0000020f554a2168;  1 drivers
+L_0000020f554a21b0 .functor BUFT 1, C4<1>, C4<0>, C4<0>, C4<0>;
+v0000020f554535e0_0 .net/2u *"_ivl_18", 0 0, L_0000020f554a21b0;  1 drivers
+v0000020f55453e00_0 .net/2u *"_ivl_2", 0 0, L_0000020f554a2048;  1 drivers
+v0000020f55453d60_0 .net *"_ivl_4", 0 0, L_0000020f5540b060;  1 drivers
+L_0000020f554a2090 .functor BUFT 1, C4<1>, C4<0>, C4<0>, C4<0>;
+v0000020f55453b80_0 .net/2u *"_ivl_6", 0 0, L_0000020f554a2090;  1 drivers
+L_0000020f554a20d8 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v0000020f55453ea0_0 .net/2u *"_ivl_8", 0 0, L_0000020f554a20d8;  1 drivers
+o0000020f554591e8 .functor BUFZ 1, C4<z>; HiZ drive
+v0000020f55454440_0 .net "clk", 0 0, o0000020f554591e8;  0 drivers
+v0000020f55453900_0 .var "curr_state", 0 0;
+v0000020f55453680_0 .var "next_state", 0 0;
+o0000020f55459278 .functor BUFZ 1, C4<z>; HiZ drive
+v0000020f55453cc0_0 .net "rst", 0 0, o0000020f55459278;  0 drivers
+v0000020f554539a0_0 .net "traffic_code", 1 0, L_0000020f55453720;  1 drivers
+E_0000020f5540c0c0 .event anyedge, v0000020f55453900_0, v0000020f554539a0_0;
+E_0000020f5540bac0 .event posedge, v0000020f55454440_0;
+L_0000020f55453720 .concat [ 1 1 0 0], o0000020f55458fa8, o0000020f55459008;
+L_0000020f554537c0 .functor MUXZ 1, L_0000020f554a20d8, L_0000020f554a2090, L_0000020f5540b060, C4<>;
+L_0000020f55453f40 .functor MUXZ 1, L_0000020f554a21b0, L_0000020f554a2168, L_0000020f55423560, C4<>;
+    .scope S_0000020f55422ce0;
+T_0 ;
+    %wait E_0000020f5540bac0;
+    %load/vec4 v0000020f55453cc0_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0000020f55453900_0, 0;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v0000020f55453680_0;
+    %assign/vec4 v0000020f55453900_0, 0;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+    .scope S_0000020f55422ce0;
+T_1 ;
+    %wait E_0000020f5540c0c0;
+    %load/vec4 v0000020f55453900_0;
+    %dup/vec4;
+    %pushi/vec4 0, 0, 1;
+    %cmp/u;
+    %jmp/1 T_1.0, 6;
+    %dup/vec4;
+    %pushi/vec4 1, 0, 1;
+    %cmp/u;
+    %jmp/1 T_1.1, 6;
+    %jmp T_1.2;
+T_1.0 ;
+    %load/vec4 v0000020f554539a0_0;
+    %dup/vec4;
+    %pushi/vec4 0, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.3, 6;
+    %dup/vec4;
+    %pushi/vec4 1, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.4, 6;
+    %dup/vec4;
+    %pushi/vec4 2, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.5, 6;
+    %dup/vec4;
+    %pushi/vec4 3, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.6, 6;
+    %jmp T_1.7;
+T_1.3 ;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.7;
+T_1.4 ;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.7;
+T_1.5 ;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.7;
+T_1.6 ;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.7;
+T_1.7 ;
+    %pop/vec4 1;
+    %jmp T_1.2;
+T_1.1 ;
+    %load/vec4 v0000020f554539a0_0;
+    %dup/vec4;
+    %pushi/vec4 0, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.8, 6;
+    %dup/vec4;
+    %pushi/vec4 1, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.9, 6;
+    %dup/vec4;
+    %pushi/vec4 2, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.10, 6;
+    %dup/vec4;
+    %pushi/vec4 3, 0, 2;
+    %cmp/u;
+    %jmp/1 T_1.11, 6;
+    %jmp T_1.12;
+T_1.8 ;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.12;
+T_1.9 ;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.12;
+T_1.10 ;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.12;
+T_1.11 ;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000020f55453680_0, 0, 1;
+    %jmp T_1.12;
+T_1.12 ;
+    %pop/vec4 1;
+    %jmp T_1.2;
+T_1.2 ;
+    %pop/vec4 1;
+    %jmp T_1;
+    .thread T_1, $push;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "traffic_light.v";
