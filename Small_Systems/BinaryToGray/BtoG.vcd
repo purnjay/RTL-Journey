@@ -1,0 +1,113 @@
+$date
+	Tue Nov 17 21:34:04 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module BtoG_tb $end
+$var wire 4 ! g_data [3:0] $end
+$var reg 4 " b_data [3:0] $end
+$scope module bg0 $end
+$var wire 4 # b_data [3:0] $end
+$var wire 4 $ g_data [3:0] $end
+$var parameter 32 % N $end
+$scope begin genblk1[0] $end
+$var parameter 2 & i $end
+$upscope $end
+$scope begin genblk1[1] $end
+$var parameter 2 ' i $end
+$upscope $end
+$scope begin genblk1[2] $end
+$var parameter 3 ( i $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b10 (
+b1 '
+b0 &
+b100 %
+$end
+#0
+$dumpvars
+b1 $
+b1 #
+b1 "
+b1 !
+$end
+#5000
+b11 !
+b11 $
+b10 "
+b10 #
+#10000
+b10 !
+b10 $
+b11 "
+b11 #
+#15000
+b110 !
+b110 $
+b100 "
+b100 #
+#20000
+b111 !
+b111 $
+b101 "
+b101 #
+#25000
+b101 !
+b101 $
+b110 "
+b110 #
+#30000
+b100 !
+b100 $
+b111 "
+b111 #
+#35000
+b1100 !
+b1100 $
+b1000 "
+b1000 #
+#40000
+b1101 !
+b1101 $
+b1001 "
+b1001 #
+#45000
+b1111 !
+b1111 $
+b1010 "
+b1010 #
+#50000
+b1110 !
+b1110 $
+b1011 "
+b1011 #
+#55000
+b1010 !
+b1010 $
+b1100 "
+b1100 #
+#60000
+b1011 !
+b1011 $
+b1101 "
+b1101 #
+#65000
+b1001 !
+b1001 $
+b1110 "
+b1110 #
+#70000
+b1000 !
+b1000 $
+b1111 "
+b1111 #
+#75000

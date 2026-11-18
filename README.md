@@ -4,7 +4,8 @@ RTL building blocks I am writing from scratch in Verilog, on the way to a single
 core running RV32I, the base 32 bit RISC-V instruction set. Combinational/ has the blocks that are just logic and Sequential/ has
 the ones that hold state. Each folder inside them is one piece of the datapath with its design
 file, a testbench for it, and usually a waveform dump. FSMs/ has the state machines, which aren't
-part of the datapath but the control unit is going to be one.
+part of the datapath but the control unit is going to be one. Small_Systems/ has small blocks
+that stand on their own, like the FIFO.
 
 Everything is simulated with Icarus Verilog and viewed in GTKWave out of the OSS CAD Suite. Once
 the core is together the plan is to take it through logic synthesis and place and route with
@@ -15,7 +16,7 @@ ALU has a testbench of its own. Phase 2 is sequential and it has started, the la
 and T flip flops, an N bit register, the SISO, SIPO, PISO and PIPO shift registers, a
 bi-directional shift register, up/down, ring, Johnson and mod N counters, and the register file
 are done so far. After that I did a Mealy and a Moore sequence detector and a traffic light to get FSMs
-down.
+down, then a binary to Gray converter and a FIFO.
 
 ## Running a testbench
 
@@ -121,6 +122,15 @@ reset and a combinational one for the next state.
 | FSMs | `mealy_seq_detect` | `mealy_tb.v` | Mealy sequence detector for 1011 with overlap. The output depends on the state and the input, so it only needs 4 states. |
 | FSMs | `moore_seqdetect` | `mooreTB.v` | Moore sequence detector, the 4 bit sequence comes in on correct_seq. The output only depends on the state so it needs 5, and any wrong bit goes back to S0. |
 | FSMs | `traffic_light_intersection` | `Traffic_light_tb.v` | Traffic light for an intersection with two states, NS green and EW green. The light switches when a car is waiting on the red side, so with cars on both sides it flips every clock. |
+
+## Small systems
+
+All of these live in Small_Systems/, each in its own folder.
+
+| Folder | Module | Testbench | What it does |
+| --- | --- | --- | --- |
+| BinaryToGray | `BtoG` | `BtoG_tb.v` | N bit binary to Gray converter. A generate loop XORs each bit with the one above it, and the top bit stays the same. |
+| FIFO | `fifo` | `FIFO_tb.v` | FIFO with depth N and data width set by parameters. Read and write pointers go around an array and a count drives full and empty, writes are ignored when full and reads when empty. |
 
 ## Notes to self
 
