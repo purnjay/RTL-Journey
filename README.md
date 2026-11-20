@@ -16,7 +16,7 @@ ALU has a testbench of its own. Phase 2 is sequential and it has started, the la
 and T flip flops, an N bit register, the SISO, SIPO, PISO and PIPO shift registers, a
 bi-directional shift register, up/down, ring, Johnson and mod N counters, and the register file
 are done so far. After that I did a Mealy and a Moore sequence detector and a traffic light to get FSMs
-down, then a binary to Gray converter and a FIFO.
+down, then a binary to Gray converter, a FIFO and a Booth multiplier.
 
 ## Running a testbench
 
@@ -131,6 +131,7 @@ All of these live in Small_Systems/, each in its own folder.
 | --- | --- | --- | --- |
 | BinaryToGray | `BtoG` | `BtoG_tb.v` | N bit binary to Gray converter. A generate loop XORs each bit with the one above it, and the top bit stays the same. |
 | FIFO | `fifo` | `FIFO_tb.v` | FIFO with depth N and data width set by parameters. Read and write pointers go around an array and a count drives full and empty, writes are ignored when full and reads when empty. |
+| Booth'sMultiplier | `boothMult` | `booth_tb.v` | N bit signed multiplier using Booth's algorithm, one add/sub and shift per clock so it takes N clocks. It has a start/done handshake, pulse start while it isn't busy to load M and Q, and done goes high when the 2N bit result is ready and stays high until the next start. |
 
 ## Notes to self
 
