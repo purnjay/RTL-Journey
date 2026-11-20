@@ -1,11 +1,12 @@
+`default_nettype none
 // BI-DIRECTIONAL SHIFT REGISTER
 
 module BDSR #(parameter N = 4) (
-    input clk,
-    input rst,
-    input R_Lshift, // 0 for left and 1 for right
-    input d,
-    output q
+    input wire clk,
+    input wire rst,
+    input wire R_Lshift, // 0 for left and 1 for right
+    input wire d,
+    output wire q
 );
 
 // to hold in the values
@@ -24,3 +25,5 @@ end
 assign q = R_Lshift ? shift_reg[0] : shift_reg[N-1];
 
 endmodule
+
+`default_nettype wire

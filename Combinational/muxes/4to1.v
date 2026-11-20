@@ -1,7 +1,8 @@
+`default_nettype none
 // Implementing a 4 to 1 mux 
 module mux_4to1(
-    input [3:0] a, // normal inputs
-    input [1:0] sel, // the selection input is a 2 bit wide input
+    input wire [3:0] a, // normal inputs
+    input wire [1:0] sel, // the selection input is a 2 bit wide input
     output reg out // output 
 );
 
@@ -14,3 +15,5 @@ always @(*) begin
     endcase
 end
 endmodule
+
+`default_nettype wire

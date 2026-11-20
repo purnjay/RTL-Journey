@@ -1,13 +1,14 @@
+`default_nettype none
 module jk_ff (
     //input variables
-    input clk,
-    input J,
-    input K,
-    input rst,
+    input wire clk,
+    input wire J,
+    input wire K,
+    input wire rst,
 
     //output variables
     output reg Q,
-    output Qbar
+    output wire Qbar
 );
 
 // make it trigger on the positive edge of the clock, this is the synchronous version
@@ -28,3 +29,5 @@ end
 assign Qbar = ~Q; // since they should be complementary
 
 endmodule
+
+`default_nettype wire

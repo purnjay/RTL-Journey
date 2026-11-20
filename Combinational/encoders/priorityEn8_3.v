@@ -1,5 +1,6 @@
+`default_nettype none
 module priorityEn8_3 (
-    input      [7:0] in,     // 8 request lines
+    input wire [7:0] in,     // 8 request lines
     output reg [2:0] out    // index of highest set bit
 );
 
@@ -18,3 +19,5 @@ module priorityEn8_3 (
     end
 
 endmodule
+
+`default_nettype wire

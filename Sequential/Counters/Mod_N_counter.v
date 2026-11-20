@@ -1,6 +1,7 @@
+`default_nettype none
 module mod_n_counter #(parameter N = 2)(
-    input clk,
-    input rst,
+    input wire clk,
+    input wire rst,
     output reg [$clog2(N)-1:0] count
 );
 
@@ -16,3 +17,5 @@ always @(posedge clk) begin
     end
 end
 endmodule
+
+`default_nettype wire

@@ -1,23 +1,24 @@
 // A REGISTER MODULE MADE FROM COMBINED LEARNING EXPERIENCES FROM SEQUENTIAL MODULES 
 `include "../Register/n_bit_register.v"
 `include "../../Combinational/decoders/n_decoder.v"
+`default_nettype none
 
 
 module REGISTER #(parameter WIDTH = 8, parameter noOfRegs = 8) (
     // clock and reset signals
-    input clk,
-    input rst,
+    input wire clk,
+    input wire rst,
 
     // Write control signals
-    input write_en,
-    input [WIDTH-1:0] data_in,
-    input [$clog2(noOfRegs)-1:0] writeAddr, 
+    input wire write_en,
+    input wire [WIDTH-1:0] data_in,
+    input wire [$clog2(noOfRegs)-1:0] writeAddr, 
 
     // Output value and addr for read ports
-    output [WIDTH-1:0] rDataA,
-    input [$clog2(noOfRegs)-1:0] rAddrA,
-    output [WIDTH-1:0] rDataB,
-    input [$clog2(noOfRegs)-1:0] rAddrB
+    output wire [WIDTH-1:0] rDataA,
+    input wire [$clog2(noOfRegs)-1:0] rAddrA,
+    output wire [WIDTH-1:0] rDataB,
+    input wire [$clog2(noOfRegs)-1:0] rAddrB
 );
 
 // signals to get which register should be enabled according to the address
@@ -44,3 +45,5 @@ assign rDataB = (rAddrB == 0) ? {WIDTH{1'b0}} : reg_out[rAddrB];
 // the above statement handles x0 case also which means if the address is 0 for the read ports, the output will be 0 regardless of the register contents
 
 endmodule
+
+`default_nettype wire

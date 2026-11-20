@@ -1,10 +1,11 @@
+`default_nettype none
 // MOORE SEQUENCE DETECTOR MODULE
 
 module moore_seqdetect(
-    input clk,
-    input rst,
-    input seq_in,
-    input [3:0] correct_seq,
+    input wire clk,
+    input wire rst,
+    input wire seq_in,
+    input wire [3:0] correct_seq,
     output reg detection
 );
 
@@ -43,3 +44,5 @@ always @(*) begin
 end
 
 endmodule
+
+`default_nettype wire

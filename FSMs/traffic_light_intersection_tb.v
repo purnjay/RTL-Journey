@@ -1,5 +1,5 @@
 `timescale 1ps/1ps
-`include "Traffic_light.v"
+`include "traffic_light.v"
 
 module tl_tb;
 

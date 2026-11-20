@@ -1,4 +1,5 @@
 `include "../add_sub/add_sub.v"
+`default_nettype none
 
 //------------------------
 // ARTHEMATIC LOGIC UNIT
@@ -8,16 +9,16 @@
 
 module ALU(
 
-    input [7:0] a,              // input a
-    input [7:0] b,              // input b 
-    input [2:0] op,             // OP codes for selecting certain operations
+    input wire [7:0] a,              // input a
+    input wire [7:0] b,              // input b 
+    input wire [2:0] op,             // OP codes for selecting certain operations
 
     output reg [7:0] result,    // the output from the ALU
 
-    output overflow,            // the output to show any overflow
-    output zero,                // if the result is all 0
-    output negative,            // if the result is negative
-    output carry                // if the result has any carry out from the add/sub
+    output wire overflow,            // the output to show any overflow
+    output wire zero,                // if the result is all 0
+    output wire negative,            // if the result is negative
+    output wire carry                // if the result has any carry out from the add/sub
 );
 
 // OPCODE MAPPING
@@ -87,3 +88,5 @@ end
     assign zero = ~|result; // oring would mean 0 if every result element is 0 or 1, if it's 0 and not would make it 1 
 
 endmodule
+
+`default_nettype wire

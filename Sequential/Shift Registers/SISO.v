@@ -1,11 +1,12 @@
+`default_nettype none
 //SERIAL IN SERIAL OUT SHIFT REGISTER
 
 module SISO #(parameter N = 1)(
-    input d,
-    input clk,
-    input rst,
-    output q,
-    output [N-1:0] shift_reg_out
+    input wire d,
+    input wire clk,
+    input wire rst,
+    output wire q,
+    output wire [N-1:0] shift_reg_out
 );
 
 reg [N-1:0] shift_reg;
@@ -22,3 +23,5 @@ end
 assign q = shift_reg[N-1]; // assign the q as the value of the last shift reg
 assign shift_reg_out = shift_reg; // assign the output register values
 endmodule
+
+`default_nettype wire

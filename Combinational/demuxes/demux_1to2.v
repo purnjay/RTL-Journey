@@ -1,8 +1,9 @@
+`default_nettype none
 `ifndef DMUX_1TO2_V
 `define DMUX_1TO2_V
 module dmux_1to2(
-    input a, // input to the demux
-    input sel, // selection input
+    input wire a, // input to the demux
+    input wire sel, // selection input
     output reg out0, // output 0
     output reg out1 // output 1
 );
@@ -18,3 +19,5 @@ always @(*) begin
 end
 endmodule
 `endif
+
+`default_nettype wire

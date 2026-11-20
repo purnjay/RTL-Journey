@@ -1,5 +1,6 @@
+`default_nettype none
 module _encoder8to3 (
-    input [7:0] in, // 8-bit input for the encoder
+    input wire [7:0] in, // 8-bit input for the encoder
     output reg [2:0] out // 3-bit output for the encoder
 );
 
@@ -12,3 +13,5 @@ always @(*) begin
 end
 
 endmodule
+
+`default_nettype wire

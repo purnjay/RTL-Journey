@@ -1,10 +1,11 @@
 `include "../half_adder/half_adder.v"
+`default_nettype none
 module full_adder(
-    input a, 
-    input b, 
-    input cin, 
-    output total_sum, 
-    output cout
+    input wire a, 
+    input wire b, 
+    input wire cin, 
+    output wire total_sum, 
+    output wire cout
 );
 
 // Wires to hold the immediate values from the first half adder
@@ -24,3 +25,5 @@ half_adder ha2(.a(cin), .b(sum1), .sum(total_sum), .carry(cout2));
 assign cout = cout1 | cout2; 
 
 endmodule
+
+`default_nettype wire

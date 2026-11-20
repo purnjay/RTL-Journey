@@ -1,12 +1,13 @@
 `include "demux_1to4.v"
+`default_nettype none
 
 `ifndef DMUX_1TO8_V
 `define DMUX_1TO8_V
 
 module dmux_1to8(
-    input a, // input to the demux
-    input [2:0] sel, // selection input
-    output [7:0] out // outputs 0-7
+    input wire a, // input to the demux
+    input wire [2:0] sel, // selection input
+    output wire [7:0] out // outputs 0-7
 );
 
 wire carry1, carry2; // wires to connect the 1 to 4 demuxes
@@ -18,3 +19,5 @@ dmux_1to4 d3(.a(carry2), .sel(sel[1:0]), .out(out[7:4]));
 
 endmodule
 `endif
+
+`default_nettype wire

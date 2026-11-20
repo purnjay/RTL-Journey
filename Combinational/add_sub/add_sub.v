@@ -1,17 +1,18 @@
 `include "../ripple_carry_adder_N/ripple_carry_N_adder.v"
+`default_nettype none
 
 
 module add_sub(
 
     // inputs for the add_sub unit
-    input [7:0] a,
-    input [7:0] b,
-    input sel, // we use 0 for adding, 1 for subtracting 
+    input wire [7:0] a,
+    input wire [7:0] b,
+    input wire sel, // we use 0 for adding, 1 for subtracting 
 
     // output the result
-    output [7:0] result,
-    output overflow,
-    output cout
+    output wire [7:0] result,
+    output wire overflow,
+    output wire cout
 );
 
 // wire to cary xor'ed b input 
@@ -33,3 +34,5 @@ assign overflow = carry0 ^ carry1;
 assign cout = carry1;
 
 endmodule
+
+`default_nettype wire

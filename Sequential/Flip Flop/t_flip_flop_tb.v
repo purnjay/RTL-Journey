@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-`include "T_Flip_Flop.v"
+`include "T_flip_flop.v"
 
 module tff_tb;
 

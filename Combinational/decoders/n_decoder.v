@@ -1,5 +1,6 @@
+`default_nettype none
 module n_decoder #(parameter N=1)(
-    input [N-1:0] in,
+    input wire [N-1:0] in,
     output reg [2**N-1:0] out
 );
 
@@ -23,3 +24,5 @@ bits | y3 | y2 | y1 | y0
 */
 
 endmodule
+
+`default_nettype wire

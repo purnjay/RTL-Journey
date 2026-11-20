@@ -1,14 +1,15 @@
 //PARALLEL IN SERIAL OUT SHIFT REGISTER
 `include "../Register/n_bit_register.v"
+`default_nettype none
 
 module PISO #(parameter N = 4)(
-    input [N-1:0] d,
-    input clk,
-    input SH_LD, // Shift Load: 1 for shift, 0 for load
-    input rst,
+    input wire [N-1:0] d,
+    input wire clk,
+    input wire SH_LD, // Shift Load: 1 for shift, 0 for load
+    input wire rst,
 
-    output [N-1:0] shift_out,
-    output q
+    output wire [N-1:0] shift_out,
+    output wire q
 );
 
 // to carry the other D forward based on SH_LD
@@ -33,3 +34,5 @@ endgenerate
 assign q = shift_out[N-1];
 
 endmodule
+
+`default_nettype wire

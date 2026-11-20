@@ -1,10 +1,11 @@
 `timescale 1ns / 1ps
 `include "../Shift Registers/SISO.v"
+`default_nettype none
 
 module ring_counter #(parameter N = 4)(
-    input preset,
-    input clk,
-    input rst,
+    input wire preset,
+    input wire clk,
+    input wire rst,
     output reg [N-1:0] q
 );
 
@@ -21,3 +22,5 @@ always @(posedge clk) begin
     end
 end
 endmodule
+
+`default_nettype wire

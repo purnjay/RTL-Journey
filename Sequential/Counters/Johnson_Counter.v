@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
+`default_nettype none
 
 module johnson_counter #(parameter N = 4)(
-    input clk,
-    input rst,
+    input wire clk,
+    input wire rst,
     output reg [N-1:0] q
 );
 
@@ -14,3 +15,5 @@ always @(posedge clk) begin
 end
 
 endmodule
+
+`default_nettype wire

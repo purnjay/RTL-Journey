@@ -1,11 +1,12 @@
 `include "D_Flip_Flop.v"
+`default_nettype none
 
 module t_flip_flop(
-    input T,        // the toggle input
-    input clk,      // the clock signal
-    input rst,
-    output Q,       // the Q signal
-    output Qbar     // the Qbar signal
+    input wire T,        // the toggle input
+    input wire clk,      // the clock signal
+    input wire rst,
+    output wire Q,       // the Q signal
+    output wire Qbar     // the Qbar signal
 );
 
 wire D;             // carrying the combined XOR 
@@ -16,3 +17,5 @@ assign D = (T ^ Q) & ~rst; // Just need to add an XOR gate with synchronous rese
 d_flip_flop dff0(.D(D), .clk(clk), .Q(Q), .Qbar(Qbar));
 
 endmodule
+
+`default_nettype wire

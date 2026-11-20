@@ -1,7 +1,8 @@
+`default_nettype none
 // Implementing a 8 to 1 mux 
 module mux_8to1(
-    input [7:0] a, // normal inputs
-    input [2:0] sel, // the selection input is a 3 bit wide input
+    input wire [7:0] a, // normal inputs
+    input wire [2:0] sel, // the selection input is a 3 bit wide input
     output reg out // output 
 );
 
@@ -19,3 +20,5 @@ always @(*) begin
     endcase
 end
 endmodule
+
+`default_nettype wire

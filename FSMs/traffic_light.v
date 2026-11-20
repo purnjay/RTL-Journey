@@ -1,10 +1,11 @@
+`default_nettype none
 module traffic_light_intersection(
-    input clk,  // clock signal
-    input rst,  // reset signal
-    input NScar, // input for the NS
-    input EWcar,  // input for the EW
-    output NSlite, // output for NSlite 
-    output EWlite  // output for EWlite
+    input wire clk,  // clock signal
+    input wire rst,  // reset signal
+    input wire NScar, // input for the NS
+    input wire EWcar,  // input for the EW
+    output wire NSlite, // output for NSlite 
+    output wire EWlite  // output for EWlite
 );
 // defined states
 localparam NSgreen = 1'b0, EWgreen = 1'b1;
@@ -49,3 +50,5 @@ assign NSlite = (curr_state == NSgreen) ? 1'b1 : 1'b0;
 assign EWlite = (curr_state == NSgreen) ? 1'b0 : 1'b1;
 
 endmodule
+
+`default_nettype wire

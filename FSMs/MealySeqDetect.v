@@ -1,10 +1,11 @@
+`default_nettype none
 // MEALY SEQUENCE DETECTOR
 
 module mealy_seq_detect(
-    input clk,
-    input rst,
-    input seq,
-    output detection
+    input wire clk,
+    input wire rst,
+    input wire seq,
+    output wire detection
 ); 
 
 localparam [2:0] S0 = 3'b000,
@@ -36,3 +37,5 @@ end
 assign detection = (curr_state == S3) && seq;
 
 endmodule
+
+`default_nettype wire

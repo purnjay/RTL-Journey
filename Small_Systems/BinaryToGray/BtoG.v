@@ -1,11 +1,12 @@
+`default_nettype none
 // Binary to Gray convertor
 
 module BtoG #(parameter N = 4)(
     //input
-    input [N-1:0] b_data,
+    input wire [N-1:0] b_data,
     
     //output
-    output [N-1:0] g_data
+    output wire [N-1:0] g_data
 );
 
 // loop to xor the binary bits to convert them to gray ones
@@ -20,3 +21,5 @@ endgenerate
 assign g_data[N-1] = b_data[N-1];
 
 endmodule
+
+`default_nettype wire

@@ -1,15 +1,16 @@
+`default_nettype none
 // FIRST IN FIRST OUT PARAMETRIZED
 
 module fifo #(parameter N = 8, width = 8)(
-    input clk,      // clock
-    input rst,      // reset
-    input w_en,     // write enable
-    input r_en,     // read enable
-    input [width-1:0] i_data,     // incoming data
+    input wire clk,      // clock
+    input wire rst,      // reset
+    input wire w_en,     // write enable
+    input wire r_en,     // read enable
+    input wire [width-1:0] i_data,     // incoming data
 
     output reg [width-1:0] o_data,   // out going data
-    output w_full,    // to indicate if full or not
-    output w_empty    // same as above, to tell if empty or not
+    output wire w_full,    // to indicate if full or not
+    output wire w_empty    // same as above, to tell if empty or not
 
 );
 
@@ -49,3 +50,5 @@ assign w_full = (count == N); // full is true when the count has reached the dep
 assign w_empty = (count == 0); // empty is true when the count has reached the start of the fifo
 
 endmodule
+
+`default_nettype wire

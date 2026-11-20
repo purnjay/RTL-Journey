@@ -1,11 +1,12 @@
+`default_nettype none
 module boothMult #(parameter N = 4)(
-    input clk,
-    input rst,
-    input start,          // to start the operation
-    input [N-1:0] M,     //Multiplicand
-    input [N-1:0] Q,     // Multiplier
+    input wire clk,
+    input wire rst,
+    input wire start,          // to start the operation
+    input wire [N-1:0] M,     //Multiplicand
+    input wire [N-1:0] Q,     // Multiplier
     output reg done,        // flag for multiplication done signal
-    output [(2*N)-1:0] result
+    output wire [(2*N)-1:0] result
 );
 
 /* 
@@ -74,3 +75,5 @@ end
 assign result = store[2*N:1];
 
 endmodule
+
+`default_nettype wire
