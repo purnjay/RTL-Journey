@@ -115,7 +115,7 @@ out of the one before it. All three flip flops are in the Flip Flop folder.
 | Shift Registers | `SISO` | `SISO_tb.v` | Serial in serial out shift register, shifts d in every clock and q is the last bit. At N = 1 it is just a D flip flop. |
 | Shift Registers | `SIPO` | `SIPO_tb.v` | Serial in parallel out, uses the SISO module but outputs all N bits at once. |
 | Shift Registers | `PISO` | `PISO_tb.v` | Parallel in serial out, made from 1 bit registers. SH_LD = 0 loads d, SH_LD = 1 shifts it out of q one bit at a time. |
-| Shift Registers | `PIPO` | none yet | Parallel in parallel out, q takes all of d every clock. Same as the register without en. |
+| Shift Registers | `PIPO` | `PIPO_tb.v` | Parallel in parallel out, q takes all of d every clock. Same as the register without en. |
 | Bi_directionalShiftReg | `BDSR` | `BDSR_tb.v` | Bi-directional shift register, R_Lshift = 0 shifts left and 1 shifts right. q is the bit at whichever end it is shifting towards. |
 | Counters | `counter_up_down` | `counter_up_down_tb.v` | N bit up/down counter, dir = 1 counts up and dir = 0 counts down. |
 | Counters | `ring_counter` | `ring_counter_tb.v` | Ring counter, preset puts a 1 in the first flip flop and then it goes around, 0001, 0010, 0100, 1000 and back. |
