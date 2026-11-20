@@ -48,8 +48,8 @@ so put quotes around it when you cd in.
 Every module sits at the same depth on purpose, so the .. in the includes always points at the
 folder holding all of them and the same two commands work everywhere, ALU included.
 
-The .v.out and .vcd files sitting in the folders are just compiler and simulation output, the
-commands above make them again.
+The .out and .vcd files are just compiler and simulation output, so they are in .gitignore and
+not committed. The commands above make them again.
 
 ## The ALU
 
