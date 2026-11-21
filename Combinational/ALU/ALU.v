@@ -45,7 +45,6 @@ wire sel = (op == 3'b001); //only will be 1 if it matches, 0 otherwise
 //add sub module to be instantiated 
 add_sub a0(.a(a), .b(b), .sel(sel), .result(add_sub_result), .overflow(o), .cout(cout));
 
-
 always @(*) begin
 
     case(op)
@@ -80,12 +79,14 @@ always @(*) begin
     endcase
 end
 
-    assign carry = cout; // get the carry out from the end of the ripple carry adder
-    assign overflow = o; // get if the number overflowed into signed territory
+    // only if Addition or subtraction is being done
+    assign carry = (op == 3'b000 || op == 3'b001) ? cout : 1'b0; // get the carry out from the end of the ripple carry adder
+    assign overflow = (op == 3'b000 || op == 3'b001) ? o : 1'b0; // get if the number overflowed into signed territory
+    
     assign negative = result[7]; // by taking the MSB
 
     // this basically or's every bit in the result and then nots it 
-    assign zero = ~|result; // oring would mean 0 if every result element is 0 or 1, if it's 0 and not would make it 1 
+    assign zero = ~|result; // oring would mean 0 if every result element is 0 or 1, if it's 0 not would make it 1 
 
 endmodule
 

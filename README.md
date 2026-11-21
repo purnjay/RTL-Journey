@@ -25,8 +25,8 @@ Phase 3 is FSMs. A Mealy and a Moore sequence detector and a traffic light.
 Phase 4 is small systems. A binary to Gray converter, a FIFO and a Booth multiplier with a
 start/done handshake.
 
-Next is verifying the ALU properly, first with a self-checking testbench and then in cocotb, and
-after that the single cycle RV32I core. Both are in What is next at the bottom.
+The ALU has a self-checking testbench now. Next is moving those checks into cocotb, and after that
+the single cycle RV32I core. Both are in What is next at the bottom.
 
 ## Running a testbench
 
@@ -42,7 +42,7 @@ gtkwave n_decoder_tb.vcd
 
 You only pass the testbench to iverilog, it already includes the design file it needs. Same thing
 for every other folder, just swap in that testbench name. Every testbench is named after the
-module it tests, `<module>_tb.v`. The Flip Flop folder has a space in it,
+module it tests, `<module>_tb.v`, and a self-checking one gets selfcheck_ in front. The Flip Flop folder has a space in it,
 so put quotes around it when you cd in.
 
 Every module sits at the same depth on purpose, so the .. in the includes always points at the
@@ -76,8 +76,9 @@ Four flags come out with the result:
 | carry | the carry out of the top of the ripple carry adder |
 | overflow | from add_sub, signed overflow |
 
-carry and overflow both come off the add_sub path, so they only really mean anything on ADD and
-SUB. The logic ops leave whatever the adder happened to produce sitting on them.
+carry and overflow both come off the add_sub path, so they only mean anything on ADD and SUB. On
+every other op they are forced to 0 so the logic ops don't leave whatever the adder produced
+sitting on them.
 
 ## Combinational blocks
 
@@ -97,7 +98,7 @@ one before it.
 | comparator | `mag_comp_N` | `mag_comp_N_tb.v` | N bit comparator with outputs for a < b, a == b and a > b. |
 | add_sub | `add_sub` | `add_sub_tb.v` | 8 bit adder/subtractor using the ripple carry adder. sel = 0 adds, sel = 1 XORs b and sets the carry in to 1 to subtract. Also outputs overflow and carry out. |
 | barrel_shifter | `barrel_shifter` | `barrel_shifter_tb.v` | 8 bit left shift by 0 to 7, done in three stages that shift by 1, 2 and 4. |
-| ALU | `ALU` | `ALU_tb.v` | Puts everything above together, the opcodes are in the ALU section. |
+| ALU | `ALU` | `ALU_tb.v`, `selfcheck_ALU_tb.v` | Puts everything above together, the opcodes are in the ALU section. The self-checking testbench runs 1000 random a, b and op values, works out the expected result and flags in a function and counts how many pass and fail. |
 
 ## Sequential blocks
 
@@ -169,9 +170,9 @@ core starts up in a known state.
 
 ## What is next
 
-Before the core, the ALU needs real verification. First a self-checking testbench that works out
-the expected result and flags for every op and reports a pass or fail on its own, then the same
-checks moved into cocotb.
+Before the core, the ALU needs real verification. The self-checking testbench is done, it works
+out the expected result and flags for every op and reports a pass or fail on its own. Next is
+moving the same checks into cocotb.
 
 The core is going to be a single cycle RV32I, so the ALU and the barrel shifter have to go from
 8 bits up to 32. The ALU also needs a 4 bit op since RV32I has ADD, SUB, AND, OR, XOR, SLL, SRL,
