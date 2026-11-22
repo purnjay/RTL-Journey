@@ -25,8 +25,8 @@ Phase 3 is FSMs. A Mealy and a Moore sequence detector and a traffic light.
 Phase 4 is small systems. A binary to Gray converter, a FIFO and a Booth multiplier with a
 start/done handshake.
 
-The ALU has a self-checking testbench now. Next is moving those checks into cocotb, and after that
-the single cycle RV32I core. Both are in What is next at the bottom.
+The ALU is verified now, with a self-checking testbench and a cocotb test. Next is the single cycle
+RV32I core, which is in What is next at the bottom.
 
 ## Running a testbench
 
@@ -50,6 +50,22 @@ folder holding all of them and the same two commands work everywhere, ALU includ
 
 The .out and .vcd files are just compiler and simulation output, so they are in .gitignore and
 not committed. The commands above make them again.
+
+## Running the cocotb test
+
+The ALU folder also has a cocotb test, test_alu.py, with a Makefile that runs it on Icarus. cd in
+and run make:
+
+```
+cd Combinational/ALU
+make
+```
+
+It needs cocotb (pip install cocotb) and GNU make. cocotb's Makefiles also use sh and uname, so on
+Windows make has to see Git's Unix tools in C:\Program Files\Git\usr\bin, either from a Git Bash
+terminal or with that folder added to the end of PATH. VERILOG_SOURCES in the Makefile is a
+relative path on purpose, make splits paths at spaces and this repo's folder names have them.
+sim_build/ and results.xml are output and are in .gitignore too.
 
 ## The ALU
 
@@ -98,7 +114,7 @@ one before it.
 | comparator | `mag_comp_N` | `mag_comp_N_tb.v` | N bit comparator with outputs for a < b, a == b and a > b. |
 | add_sub | `add_sub` | `add_sub_tb.v` | 8 bit adder/subtractor using the ripple carry adder. sel = 0 adds, sel = 1 XORs b and sets the carry in to 1 to subtract. Also outputs overflow and carry out. |
 | barrel_shifter | `barrel_shifter` | `barrel_shifter_tb.v` | 8 bit left shift by 0 to 7, done in three stages that shift by 1, 2 and 4. |
-| ALU | `ALU` | `ALU_tb.v`, `selfcheck_ALU_tb.v` | Puts everything above together, the opcodes are in the ALU section. The self-checking testbench runs 1000 random a, b and op values, works out the expected result and flags in a function and counts how many pass and fail. |
+| ALU | `ALU` | `ALU_tb.v`, `selfcheck_ALU_tb.v`, `test_alu.py` | Puts everything above together, the opcodes are in the ALU section. The self-checking testbench runs 1000 random a, b and op values, works out the expected result and flags in a function and counts how many pass and fail. test_alu.py does the same 1000 random checks in cocotb, with a Python model of the ALU and an assert on the result and every flag. |
 
 ## Sequential blocks
 
@@ -170,9 +186,9 @@ core starts up in a known state.
 
 ## What is next
 
-Before the core, the ALU needs real verification. The self-checking testbench is done, it works
-out the expected result and flags for every op and reports a pass or fail on its own. Next is
-moving the same checks into cocotb.
+The ALU verification is done. The self-checking testbench works out the expected result and flags
+for every op and reports a pass or fail on its own, and the cocotb test runs the same checks
+against a Python model.
 
 The core is going to be a single cycle RV32I, so the ALU and the barrel shifter have to go from
 8 bits up to 32. The ALU also needs a 4 bit op since RV32I has ADD, SUB, AND, OR, XOR, SLL, SRL,
