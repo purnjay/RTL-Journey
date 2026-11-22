@@ -96,6 +96,32 @@ carry and overflow both come off the add_sub path, so they only mean anything on
 every other op they are forced to 0 so the logic ops don't leave whatever the adder produced
 sitting on them.
 
+### Verification
+
+There are three testbenches for the ALU. ALU_tb.v just prints the outputs and I check them by
+eye. selfcheck_ALU_tb.v runs 1000 random checks against a Verilog function and counts passes and
+fails. test_alu.py is the cocotb one and the most complete, it is run with make (see Running the
+cocotb test).
+
+**Reference model.** model() in test_alu.py works out the expected result and all four flags for
+any a, b and op. Every check compares the ALU's outputs to it with asserts, so if the result or
+any flag is wrong the test fails right there and says which check it was.
+
+**Constrained-random stimulus.** One cocotb test does 1000 checks. Each check picks a random op from 0 to 5, and a
+and b are random from 0 to 255, but each of them has a 30% chance of being an edge case instead:
+0, 1, 127, 128 or 255. That steers the random values towards the boundaries where carry, overflow
+and the sign bit flip, which plain random would rarely land on. On OR there is also a 10% chance
+of forcing a = b = 0, because otherwise OR almost never gives a zero result.
+
+**Functional coverage.** cocotb-coverage samples every check and reports what got hit: every op,
+a landing on each edge value, each flag at both 0 and 1, and the op crossed with zero, carry and
+overflow. For the logic ops, carry = 1 and overflow = 1 are left out of the crosses since they are
+forced to 0 and can't happen. The report shows whether the random stimulus actually reached the
+cases the asserts are meant to check, and every run so far has hit all 47 bins.
+
+To confirm the checks can actually fail, a deliberate bug was put in the model (an extra +1 on
+ADD), and the test failed on the first ADD check, then passed again once it was removed.
+
 ## Combinational blocks
 
 All of these live in Combinational/. In the order I did them, since most of them build on the
@@ -114,7 +140,7 @@ one before it.
 | comparator | `mag_comp_N` | `mag_comp_N_tb.v` | N bit comparator with outputs for a < b, a == b and a > b. |
 | add_sub | `add_sub` | `add_sub_tb.v` | 8 bit adder/subtractor using the ripple carry adder. sel = 0 adds, sel = 1 XORs b and sets the carry in to 1 to subtract. Also outputs overflow and carry out. |
 | barrel_shifter | `barrel_shifter` | `barrel_shifter_tb.v` | 8 bit left shift by 0 to 7, done in three stages that shift by 1, 2 and 4. |
-| ALU | `ALU` | `ALU_tb.v`, `selfcheck_ALU_tb.v`, `test_alu.py` | Puts everything above together, the opcodes are in the ALU section. The self-checking testbench runs 1000 random a, b and op values, works out the expected result and flags in a function and counts how many pass and fail. test_alu.py does the same 1000 random checks in cocotb, with a Python model of the ALU and an assert on the result and every flag. |
+| ALU | `ALU` | `ALU_tb.v`, `selfcheck_ALU_tb.v`, `test_alu.py` | Puts everything above together. The opcodes and how it is verified are in the ALU section. |
 
 ## Sequential blocks
 
