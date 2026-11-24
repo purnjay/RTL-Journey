@@ -59,6 +59,7 @@ def pickrand_stim():
 
 @cocotb.test()
 async def alu_test(dut):
+    
     # loop for 1000 checks with random
     for i in range(1000):
         
@@ -69,7 +70,7 @@ async def alu_test(dut):
         # to catch the edge case of not having the 0 == 0 bin checked
         # steering the edge case for this -> zero flag when a = 0, b = 0
         
-        if op == 3 and random.random() < 0.1: # make sure you get this atleast 10% of the time by force
+        if op == 3 and random.random() < 0.1: # make sure you get this 10% of the time by force
             a, b = 0, 0
         else:
             a, b = pickrand_stim(), pickrand_stim()

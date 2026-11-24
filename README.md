@@ -5,7 +5,7 @@ core running RV32I, the base 32 bit RISC-V instruction set. Combinational/ has t
 the ones that hold state. Each folder inside them is one piece of the datapath with its design
 file, a testbench for it, and usually a waveform dump. FSMs/ has the state machines, which aren't
 part of the datapath but the control unit is going to be one. Small_Systems/ has small blocks
-that stand on their own, like the FIFO.
+that stand on their own, like the FIFO. CPU/ is the core itself, as it gets built.
 
 Everything is simulated with Icarus Verilog and viewed in GTKWave out of the OSS CAD Suite. Once
 the core is together the plan is to take it through logic synthesis and place and route with
@@ -25,8 +25,11 @@ Phase 3 is FSMs. A Mealy and a Moore sequence detector and a traffic light.
 Phase 4 is small systems. A binary to Gray converter, a FIFO and a Booth multiplier with a
 start/done handshake.
 
-The ALU is verified now, with a self-checking testbench and a cocotb test. Next is the single cycle
-RV32I core, which is in What is next at the bottom.
+The ALU is verified now, with a self-checking testbench and a cocotb test.
+
+Phase 5 is the single cycle RV32I core and it has started. The program counter and instruction
+memory are done and fetch instructions together in a testbench, the rest is in What is next at
+the bottom.
 
 ## Running a testbench
 
@@ -69,7 +72,9 @@ sim_build/ and results.xml are output and are in .gitignore too.
 
 ## The ALU
 
-`Combinational/ALU/ALU.v`, 8 bits wide, and this is where phase 1 ends up. A 3 bit op picks the
+`Combinational/ALU/ALU.v`, and this is where phase 1 ends up. The width is a parameter, 8 bits by
+default, and it passes the width down to add_sub so the whole thing can go up to 32 bits for the
+core. A 3 bit op picks the
 operation, add and sub go through the add_sub unit and the logic ops are done right there in the
 case.
 
@@ -138,7 +143,7 @@ one before it.
 | encoders | `_encoder8to3` | `_encoder8to3_tb.v` | 8 to 3 encoder using OR gates. Only works with one hot inputs, an input of 0 and an input of 1 both give 000. |
 | encoders | `priorityEn8_3` | `priorityEn8_3_tb.v` | Priority encoder using casez, outputs the index of the highest bit that is set. |
 | comparator | `mag_comp_N` | `mag_comp_N_tb.v` | N bit comparator with outputs for a < b, a == b and a > b. |
-| add_sub | `add_sub` | `add_sub_tb.v` | 8 bit adder/subtractor using the ripple carry adder. sel = 0 adds, sel = 1 XORs b and sets the carry in to 1 to subtract. Also outputs overflow and carry out. |
+| add_sub | `add_sub` | `add_sub_tb.v` | N bit adder/subtractor using the ripple carry adder, 8 bits by default. sel = 0 adds, sel = 1 XORs b and sets the carry in to 1 to subtract. Also outputs overflow and carry out. |
 | barrel_shifter | `barrel_shifter` | `barrel_shifter_tb.v` | 8 bit left shift by 0 to 7, done in three stages that shift by 1, 2 and 4. |
 | ALU | `ALU` | `ALU_tb.v`, `selfcheck_ALU_tb.v`, `test_alu.py` | Puts everything above together. The opcodes and how it is verified are in the ALU section. |
 
@@ -187,22 +192,38 @@ All of these live in Small_Systems/, each in its own folder.
 | FIFO | `fifo` | `fifo_tb.v` | FIFO with depth N and data width set by parameters. Read and write pointers go around an array and a count drives full and empty, writes are ignored when full and reads when empty. |
 | Booth'sMultiplier | `boothMult` | `boothMult_tb.v` | N bit signed multiplier using Booth's algorithm, one add/sub and shift per clock so it takes N clocks. It has a start/done handshake, pulse start while it isn't busy to load M and Q, and done goes high when the 2N bit result is ready and stays high until the next start. |
 
+## CPU
+
+The single cycle RV32I core lives in CPU/ and gets built up one block at a time. Everything here is
+32 bits.
+
+| File | Module | Testbench | What it does |
+| --- | --- | --- | --- |
+| pc.v | `prog_counter` | `combined_tb.v` | Program counter, holds the address of the current instruction. Reset loads start_addr, otherwise it adds branch_step every clock, which is 4 to go to the next instruction. |
+| inst_mem.v | `inst_mem` | `combined_tb.v` | Instruction memory, depth words loaded from iData.hex with $readmemh. The address is a byte address, so it drops the bottom two bits to pick the word. |
+| iData.hex | | | The test program. addi x1 = 5, addi x2 = 3, then add, sub, and, or on x1 and x2 into x3 to x6, repeated to fill the 16 words. |
+| controlUnit.v | | | Control unit, empty so far. |
+
+combined_tb.v connects the program counter to the instruction memory, steps the PC by 4 and prints
+the address and the instruction fetched from it, so it checks the fetch part of the datapath. It
+has to be run from CPU/ since $readmemh looks for iData.hex in the folder it is run from.
+
 ## Notes to self
 
 The testbenches mostly don't check themselves. They print with $monitor or $display and I compare
-it to the truth table by eye. The barrel shifter one is the exception, it prints the expected
-value next to the actual one so I am not working it out in my head every time, and that is the
-direction I want the rest of them to go. Most of them dump a vcd too so I can open it in GTKWave
-and confirm it there instead of only trusting the terminal. Once the blocks get bigger than a
-truth table I want to move the checking into cocotb so the tests actually pass or fail on their
-own.
+it to the truth table by eye. The barrel shifter one prints the expected value next to the actual
+one so I am not working it out in my head every time. The ALU is the first one that really checks
+itself, the self-checking testbench and the cocotb test both pass or fail on their own, and that is
+the direction I want the rest of them to go. Most of them dump a vcd too so I can open it in
+GTKWave and confirm it there instead of only trusting the terminal. Once the blocks get bigger than
+a truth table the checking goes into cocotb, the same way it did for the ALU.
 
 Where the width is the interesting part (adder, decoder, comparator) the module is written with a
 parameter N and the testbench picks the actual width when it instantiates it. Keeping them
-parameterized means I can pull the same modules into the datapath without rewriting them, which
-is what add_sub does when it instantiates the ripple carry adder at N = 8. The units that are
-part of the datapath itself are fixed at 8 bits for now, they need to go up to 32 bits for the
-RISC-V core.
+parameterized means I can pull the same modules into the datapath without rewriting them. The ALU
+and add_sub work that way now too, the ALU takes a width and passes it to add_sub, which passes it
+to the ripple carry adder. They default to 8 bits and go to 32 for the RISC-V core just by setting
+the parameter. The barrel shifter is the one datapath unit still fixed at 8 bits.
 
 The latches and the D flip flop don't have a reset, so Q sits at x in simulation until something
 actually gets written into it. The JK and T ones do, both synchronous, so the reset only takes
@@ -216,15 +237,16 @@ The ALU verification is done. The self-checking testbench works out the expected
 for every op and reports a pass or fail on its own, and the cocotb test runs the same checks
 against a Python model.
 
-The core is going to be a single cycle RV32I, so the ALU and the barrel shifter have to go from
-8 bits up to 32. The ALU also needs a 4 bit op since RV32I has ADD, SUB, AND, OR, XOR, SLL, SRL,
+The core is going to be a single cycle RV32I, so everything has to be 32 bits. The ALU and add_sub
+take a width parameter now, so they just get instantiated at 32, the barrel shifter still has to go
+up from 8. The ALU also needs a 4 bit op since RV32I has ADD, SUB, AND, OR, XOR, SLL, SRL,
 SRA, SLT and SLTU. The barrel shifter needs to shift by 0 to 31 and shift right too, both logical
 and arithmetic, and then it goes into the ALU. RISC-V has no flags, branches compare two
 registers directly, so the comparator turns into the branch unit.
 
-The register file already matches, 32 registers of 32 bits with x0 always reading 0. What is left
-to build is the program counter, the immediate generator, instruction and data memory, the
-control unit and the next PC logic for branches and jumps. I am going to get R type instructions
+The register file already matches, 32 registers of 32 bits with x0 always reading 0. The program
+counter and instruction memory are done. What is left to build is the immediate generator, data
+memory, the control unit and the next PC logic for branches and jumps. I am going to get R type instructions
 working first, then I type, then loads and stores, then branches and jumps.
 
 Since it is standard RISC-V I can compile real programs with the RISC-V GCC toolchain and check

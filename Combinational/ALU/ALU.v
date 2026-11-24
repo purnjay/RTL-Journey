@@ -7,13 +7,13 @@
 
 // This is the culmination of my phase 1 of verilog building blocks
 
-module ALU(
+module ALU #(parameter width = 8)(
 
-    input wire [7:0] a,              // input a
-    input wire [7:0] b,              // input b 
+    input wire [width-1:0] a,              // input a
+    input wire [width-1:0] b,              // input b 
     input wire [2:0] op,             // OP codes for selecting certain operations
 
-    output reg [7:0] result,    // the output from the ALU
+    output reg [width-1:0] result,    // the output from the ALU
 
     output wire overflow,            // the output to show any overflow
     output wire zero,                // if the result is all 0
@@ -35,7 +35,7 @@ module ALU(
 */
 
 // the output variable to capture the value for add_sub
-wire [7:0] add_sub_result;
+wire [width-1:0] add_sub_result;
 
 wire o; //for storing overflow
 wire cout; // for storing cout
@@ -43,7 +43,7 @@ wire cout; // for storing cout
 wire sel = (op == 3'b001); //only will be 1 if it matches, 0 otherwise
 
 //add sub module to be instantiated 
-add_sub a0(.a(a), .b(b), .sel(sel), .result(add_sub_result), .overflow(o), .cout(cout));
+add_sub #(.N(width)) a0(.a(a), .b(b), .sel(sel), .result(add_sub_result), .overflow(o), .cout(cout));
 
 always @(*) begin
 
@@ -75,7 +75,7 @@ always @(*) begin
 
         // default case
         default: 
-        result = 8'b0;
+        result = {width{1'b0}};
     endcase
 end
 
@@ -83,7 +83,7 @@ end
     assign carry = (op == 3'b000 || op == 3'b001) ? cout : 1'b0; // get the carry out from the end of the ripple carry adder
     assign overflow = (op == 3'b000 || op == 3'b001) ? o : 1'b0; // get if the number overflowed into signed territory
     
-    assign negative = result[7]; // by taking the MSB
+    assign negative = result[width - 1]; // by taking the MSB
 
     // this basically or's every bit in the result and then nots it 
     assign zero = ~|result; // oring would mean 0 if every result element is 0 or 1, if it's 0 not would make it 1 
