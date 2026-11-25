@@ -27,9 +27,9 @@ start/done handshake.
 
 The ALU is verified now, with a self-checking testbench and a cocotb test.
 
-Phase 5 is the single cycle RV32I core and it has started. The program counter and instruction
-memory are done and fetch instructions together in a testbench, the rest is in What is next at
-the bottom.
+Phase 5 is the single cycle RV32I core and it has started. The program counter, instruction
+memory, data memory and immediate generator are done, each with a testbench, the rest is in What
+is next at the bottom.
 
 ## Running a testbench
 
@@ -202,11 +202,17 @@ The single cycle RV32I core lives in CPU/ and gets built up one block at a time.
 | pc.v | `prog_counter` | `combined_tb.v` | Program counter, holds the address of the current instruction. Reset loads start_addr, otherwise it adds branch_step every clock, which is 4 to go to the next instruction. |
 | inst_mem.v | `inst_mem` | `combined_tb.v` | Instruction memory, depth words loaded from iData.hex with $readmemh. The address is a byte address, so it drops the bottom two bits to pick the word. |
 | iData.hex | | | The test program. addi x1 = 5, addi x2 = 3, then add, sub, and, or on x1 and x2 into x3 to x6, repeated to fill the 16 words. |
-| controlUnit.v | | | Control unit, empty so far. |
+| data_mem.v | `data_mem` | `datamem_tb.v` | Data memory, depth words of width bits (32 by default). Writes happen on the clock edge when mem_rw = 1, reads are combinational. Like the instruction memory it drops the bottom two bits of the byte address to pick the word. |
+| imm_gen.v | `imm_gen` | `imgen_tb.v` | Immediate generator. Looks at the opcode and pulls the immediate out of the instruction for I, S, B, U and J type, sign extended to 32 bits. B and J get a 0 added at the bottom since their offsets are always even. R type has no immediate so it gives 0. |
+| controlUnit.v | `control_unit` | | Control unit, just the empty module so far. |
 
 combined_tb.v connects the program counter to the instruction memory, steps the PC by 4 and prints
 the address and the instruction fetched from it, so it checks the fetch part of the datapath. It
 has to be run from CPU/ since $readmemh looks for iData.hex in the folder it is run from.
+
+datamem_tb.v writes five words to addresses 0 to 16 and then reads them all back. imgen_tb.v feeds
+the immediate generator a positive and a negative example of each instruction type (addi, lw, sw,
+beq, lui, jal) plus an add, which should give 0.
 
 ## Notes to self
 
@@ -245,8 +251,8 @@ and arithmetic, and then it goes into the ALU. RISC-V has no flags, branches com
 registers directly, so the comparator turns into the branch unit.
 
 The register file already matches, 32 registers of 32 bits with x0 always reading 0. The program
-counter and instruction memory are done. What is left to build is the immediate generator, data
-memory, the control unit and the next PC logic for branches and jumps. I am going to get R type instructions
+counter, instruction memory, data memory and immediate generator are done. What is left to build
+is the control unit and the next PC logic for branches and jumps, then wiring it all together. I am going to get R type instructions
 working first, then I type, then loads and stores, then branches and jumps.
 
 Since it is standard RISC-V I can compile real programs with the RISC-V GCC toolchain and check
