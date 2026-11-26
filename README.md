@@ -30,7 +30,8 @@ The ALU is verified now, with a self-checking testbench and a cocotb test.
 
 Phase 5 is the single cycle core and it runs. All the blocks are built and wired together in
 cpu_top.v, and it runs all nine instructions it is meant to: add, sub, and, or, xor, addi, lw, sw
-and beq. What is left is in What is next at the bottom.
+and beq. It has also been synthesized with Yosys and placed and routed with nextpnr on a Lattice
+iCE40 HX8K, the numbers are in the CPU section. What is left is in What is next at the bottom.
 
 ## Running a testbench
 
@@ -207,7 +208,7 @@ here is 32 bits.
 | data_mem.v | `data_mem` | `datamem_tb.v` | Data memory, depth words of width bits (32 by default). Writes happen on the clock edge when mem_rw = 1, reads are combinational. Like the instruction memory it drops the bottom two bits of the byte address to pick the word. |
 | imm_gen.v | `imm_gen` | `imgen_tb.v` | Immediate generator. Looks at the opcode and pulls the immediate out of the instruction for I, S, B, U and J type, sign extended to 32 bits. B and J get a 0 added at the bottom since their offsets are always even. R type has no immediate so it gives 0. |
 | controlUnit.v | `control_unit` | `control_unit_tb.v` | Control unit. Decodes the opcode, funct3 and funct7 into the ALU op and the control signals: alu_src (rs2 or the immediate into the ALU), mem_rw (write data memory), mem_reg (ALU result or data memory into rd), reg_write and branch_step. Handles the nine instructions, any other opcode gets the defaults and writes nothing. |
-| cpu_top.v | `cpu_top` | `cputop_tb.v` | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. |
+| cpu_top.v | `cpu_top` | `cputop_tb.v` | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. It has debug outputs for what gets written back each cycle, the PC, reg_write, the rd address and the data going into it, since a top level with no outputs gets optimized away completely by synthesis. |
 
 combined_tb.v connects the program counter to the instruction memory, steps the PC by 4 and prints
 the address and the instruction fetched from it, so it checks the fetch part of the datapath. It
@@ -230,6 +231,18 @@ cd CPU
 iverilog -grelative-include -o cputop_tb.vvp cputop_tb.v
 vvp cputop_tb.vvp
 ```
+
+### Synthesis
+
+Synthesized with Yosys and placed and routed with nextpnr on a Lattice iCE40 HX8K: 2,298 logic
+cells (29%), 25 MHz Fmax.
+
+That number is for this core running this program, not a general one. The instruction memory is a
+ROM loaded from iData.hex, so Yosys knows every instruction that can ever run and removes whatever
+they never touch. None of them write a register above x15, so x16 to x31 get optimized out and only
+15 of the 32 registers are actually built. A bigger program would use more cells. The data memory
+also ends up as 512 flip flops (16 words of 32 bits) instead of the iCE40's block RAM, because its
+read is combinational and the block RAM can only be read on a clock edge.
 
 ## Notes to self
 
@@ -265,6 +278,6 @@ addi, lw, sw and beq. The ALU's existing 3 bit op already covers everything they
 addi, lw and sw, and sub for beq, which branches when the zero flag is set.
 
 cputop_tb.v runs a program that uses all nine and prints every cycle, and the registers and data
-memory end up with the right values. Next is making it check itself, comparing the registers and
-data memory at the end against the expected values instead of reading the printout, then the same
-checks in cocotb. After that Yosys and nextpnr to get it synthesized and placed and routed.
+memory end up with the right values. It also goes through Yosys and nextpnr on an iCE40 HX8K. Next
+is making the testbench check itself, comparing the registers and data memory at the end against
+the expected values instead of reading the printout, then the same checks in cocotb.

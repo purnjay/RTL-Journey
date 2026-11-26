@@ -10,7 +10,13 @@
 
 module cpu_top(
     input wire clk,      //clk
-    input wire rst       //reset
+    input wire rst,      //reset
+
+    // debug outputs -> what the CPU writes back each cycle, so synthesis has something to keep
+    output wire [31:0] dbg_pc,          // the PC (out_addr)
+    output wire dbg_reg_write,          // register write enable
+    output wire [4:0] dbg_write_addr,   // rd being written
+    output wire [31:0] dbg_write_data   // data going into rd
 );
 
 //from the program counter
@@ -64,6 +70,12 @@ wire [width_dm-1:0] w_data = read_dataB;
 assign write_data = (mem_reg) ? o_rData : result_alu; //rd ? alu_result -> 0, data mem -> 1;
 assign b = (alu_src) ? read_dataB : imm_data; // alu input b ? -> 0 = imm, 1 = rs2
 assign branch_step = (branchStep_logic && z_) ? imm_data : 32'd4; // branch step ? 0 for 4, 1 for imm
+
+// debug outputs
+assign dbg_pc = out_addr;
+assign dbg_reg_write = reg_write;
+assign dbg_write_addr = write_addr;
+assign dbg_write_data = write_data;
 
 //===============ASSIGN STATEMENTS=================
 
