@@ -203,11 +203,11 @@ here is 32 bits.
 | --- | --- | --- | --- |
 | pc.v | `prog_counter` | `combined_tb.v` | Program counter, holds the address of the current instruction. Reset loads start_addr, otherwise it adds branch_step every clock, which is 4 to go to the next instruction. |
 | inst_mem.v | `inst_mem` | `combined_tb.v` | Instruction memory, depth words loaded from iData.hex with $readmemh. The address is a byte address, so it drops the bottom two bits to pick the word. |
-| iData.hex | | | The test program. addi x1 = 5, addi x2 = 3, then add, sub, and, or on x1 and x2 into x3 to x6, repeated to fill the 16 words. |
+| iData.hex | | | The test program, 14 instructions with a comment on each one. It uses all nine: addi x1 = 5 and x2 = 3, then add, sub, and, or into x3 to x6, sw x3 to address 0 and lw it back into x7, a beq on x3 and x7 that is taken and skips an addi to x8, addi x9 = 9, an addi to x0 to check it stays 0, xor into x10, and a beq x0, x0, 0 at the end that keeps the PC parked there. |
 | data_mem.v | `data_mem` | `datamem_tb.v` | Data memory, depth words of width bits (32 by default). Writes happen on the clock edge when mem_rw = 1, reads are combinational. Like the instruction memory it drops the bottom two bits of the byte address to pick the word. |
 | imm_gen.v | `imm_gen` | `imgen_tb.v` | Immediate generator. Looks at the opcode and pulls the immediate out of the instruction for I, S, B, U and J type, sign extended to 32 bits. B and J get a 0 added at the bottom since their offsets are always even. R type has no immediate so it gives 0. |
 | controlUnit.v | `control_unit` | `control_unit_tb.v` | Control unit. Decodes the opcode, funct3 and funct7 into the ALU op and the control signals: alu_src (rs2 or the immediate into the ALU), mem_rw (write data memory), mem_reg (ALU result or data memory into rd), reg_write and branch_step. Handles the nine instructions, any other opcode gets the defaults and writes nothing. |
-| cpu_top.v | `cpu_top` | none yet | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. |
+| cpu_top.v | `cpu_top` | `cputop_tb.v` | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. |
 
 combined_tb.v connects the program counter to the instruction memory, steps the PC by 4 and prints
 the address and the instruction fetched from it, so it checks the fetch part of the datapath. It
@@ -218,12 +218,17 @@ the immediate generator a positive and a negative example of each instruction ty
 beq, lui, jal) plus an add, which should give 0. control_unit_tb.v feeds the control unit one of
 each supported instruction plus a lui to check it falls back to the defaults.
 
+cputop_tb.v resets the core, runs it for 15 clocks and on every falling edge prints the
+instruction, the PC, what is being written to which register, the data memory signals and the
+branch and zero signals, so each instruction can be followed through the datapath.
+
 cpu_top.v pulls in the ALU and the register file from Combinational/ and Sequential/, and CPU/ sits
 one folder higher than those, so their own includes only resolve with -grelative-include:
 
 ```
 cd CPU
-iverilog -grelative-include -o cpu.vvp cpu_top.v
+iverilog -grelative-include -o cputop_tb.vvp cputop_tb.v
+vvp cputop_tb.vvp
 ```
 
 ## Notes to self
@@ -259,6 +264,7 @@ The core is wired together in cpu_top.v and runs all nine instructions: add, sub
 addi, lw, sw and beq. The ALU's existing 3 bit op already covers everything they need, add for
 addi, lw and sw, and sub for beq, which branches when the zero flag is set.
 
-Next is a testbench for cpu_top that runs a program using all nine and checks the registers and
-data memory at the end, then the same checks in cocotb. After that Yosys and nextpnr to get it
-synthesized and placed and routed.
+cputop_tb.v runs a program that uses all nine and prints every cycle, and the registers and data
+memory end up with the right values. Next is making it check itself, comparing the registers and
+data memory at the end against the expected values instead of reading the printout, then the same
+checks in cocotb. After that Yosys and nextpnr to get it synthesized and placed and routed.
