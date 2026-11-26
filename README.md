@@ -1,7 +1,8 @@
 # Learning FPGA Dev
 
 RTL building blocks I am writing from scratch in Verilog, on the way to a single cycle processor
-core running RV32I, the base 32 bit RISC-V instruction set. Combinational/ has the blocks that are just logic and Sequential/ has
+core running a subset of RV32I, the base 32 bit RISC-V instruction set: ADD, SUB, AND, OR, XOR,
+ADDI, LW, SW and BEQ. Combinational/ has the blocks that are just logic and Sequential/ has
 the ones that hold state. Each folder inside them is one piece of the datapath with its design
 file, a testbench for it, and usually a waveform dump. FSMs/ has the state machines, which aren't
 part of the datapath but the control unit is going to be one. Small_Systems/ has small blocks
@@ -27,9 +28,9 @@ start/done handshake.
 
 The ALU is verified now, with a self-checking testbench and a cocotb test.
 
-Phase 5 is the single cycle RV32I core and it has started. The program counter, instruction
-memory, data memory and immediate generator are done, each with a testbench, the rest is in What
-is next at the bottom.
+Phase 5 is the single cycle core and it runs. All the blocks are built and wired together in
+cpu_top.v, and it runs all nine instructions it is meant to: add, sub, and, or, xor, addi, lw, sw
+and beq. What is left is in What is next at the bottom.
 
 ## Running a testbench
 
@@ -194,8 +195,9 @@ All of these live in Small_Systems/, each in its own folder.
 
 ## CPU
 
-The single cycle RV32I core lives in CPU/ and gets built up one block at a time. Everything here is
-32 bits.
+The single cycle core lives in CPU/. It only implements nine RV32I instructions, ADD, SUB, AND, OR,
+XOR, ADDI, LW, SW and BEQ, which is enough for arithmetic, logic, memory and a branch. Everything
+here is 32 bits.
 
 | File | Module | Testbench | What it does |
 | --- | --- | --- | --- |
@@ -204,7 +206,8 @@ The single cycle RV32I core lives in CPU/ and gets built up one block at a time.
 | iData.hex | | | The test program. addi x1 = 5, addi x2 = 3, then add, sub, and, or on x1 and x2 into x3 to x6, repeated to fill the 16 words. |
 | data_mem.v | `data_mem` | `datamem_tb.v` | Data memory, depth words of width bits (32 by default). Writes happen on the clock edge when mem_rw = 1, reads are combinational. Like the instruction memory it drops the bottom two bits of the byte address to pick the word. |
 | imm_gen.v | `imm_gen` | `imgen_tb.v` | Immediate generator. Looks at the opcode and pulls the immediate out of the instruction for I, S, B, U and J type, sign extended to 32 bits. B and J get a 0 added at the bottom since their offsets are always even. R type has no immediate so it gives 0. |
-| controlUnit.v | `control_unit` | | Control unit, just the empty module so far. |
+| controlUnit.v | `control_unit` | `control_unit_tb.v` | Control unit. Decodes the opcode, funct3 and funct7 into the ALU op and the control signals: alu_src (rs2 or the immediate into the ALU), mem_rw (write data memory), mem_reg (ALU result or data memory into rd), reg_write and branch_step. Handles the nine instructions, any other opcode gets the defaults and writes nothing. |
+| cpu_top.v | `cpu_top` | none yet | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. |
 
 combined_tb.v connects the program counter to the instruction memory, steps the PC by 4 and prints
 the address and the instruction fetched from it, so it checks the fetch part of the datapath. It
@@ -212,7 +215,16 @@ has to be run from CPU/ since $readmemh looks for iData.hex in the folder it is 
 
 datamem_tb.v writes five words to addresses 0 to 16 and then reads them all back. imgen_tb.v feeds
 the immediate generator a positive and a negative example of each instruction type (addi, lw, sw,
-beq, lui, jal) plus an add, which should give 0.
+beq, lui, jal) plus an add, which should give 0. control_unit_tb.v feeds the control unit one of
+each supported instruction plus a lui to check it falls back to the defaults.
+
+cpu_top.v pulls in the ALU and the register file from Combinational/ and Sequential/, and CPU/ sits
+one folder higher than those, so their own includes only resolve with -grelative-include:
+
+```
+cd CPU
+iverilog -grelative-include -o cpu.vvp cpu_top.v
+```
 
 ## Notes to self
 
@@ -229,7 +241,7 @@ parameter N and the testbench picks the actual width when it instantiates it. Ke
 parameterized means I can pull the same modules into the datapath without rewriting them. The ALU
 and add_sub work that way now too, the ALU takes a width and passes it to add_sub, which passes it
 to the ripple carry adder. They default to 8 bits and go to 32 for the RISC-V core just by setting
-the parameter. The barrel shifter is the one datapath unit still fixed at 8 bits.
+the parameter.
 
 The latches and the D flip flop don't have a reset, so Q sits at x in simulation until something
 actually gets written into it. The JK and T ones do, both synchronous, so the reset only takes
@@ -243,18 +255,10 @@ The ALU verification is done. The self-checking testbench works out the expected
 for every op and reports a pass or fail on its own, and the cocotb test runs the same checks
 against a Python model.
 
-The core is going to be a single cycle RV32I, so everything has to be 32 bits. The ALU and add_sub
-take a width parameter now, so they just get instantiated at 32, the barrel shifter still has to go
-up from 8. The ALU also needs a 4 bit op since RV32I has ADD, SUB, AND, OR, XOR, SLL, SRL,
-SRA, SLT and SLTU. The barrel shifter needs to shift by 0 to 31 and shift right too, both logical
-and arithmetic, and then it goes into the ALU. RISC-V has no flags, branches compare two
-registers directly, so the comparator turns into the branch unit.
+The core is wired together in cpu_top.v and runs all nine instructions: add, sub, and, or, xor,
+addi, lw, sw and beq. The ALU's existing 3 bit op already covers everything they need, add for
+addi, lw and sw, and sub for beq, which branches when the zero flag is set.
 
-The register file already matches, 32 registers of 32 bits with x0 always reading 0. The program
-counter, instruction memory, data memory and immediate generator are done. What is left to build
-is the control unit and the next PC logic for branches and jumps, then wiring it all together. I am going to get R type instructions
-working first, then I type, then loads and stores, then branches and jumps.
-
-Since it is standard RISC-V I can compile real programs with the RISC-V GCC toolchain and check
-the core against the official riscv-tests. Then cocotb testbenches, and Yosys and nextpnr to get
-it synthesized and placed and routed.
+Next is a testbench for cpu_top that runs a program using all nine and checks the registers and
+data memory at the end, then the same checks in cocotb. After that Yosys and nextpnr to get it
+synthesized and placed and routed.

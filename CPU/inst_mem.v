@@ -7,8 +7,8 @@ the intruction at a specific address.
 */
 `default_nettype none
 module inst_mem #(parameter depth = 16)(
-    input [31:0] inst_addr,    // the address for the instruction
-    output [31:0]  o_inst   // the instruction
+    input wire [31:0] inst_addr,    // the address for the instruction
+    output wire [31:0]  o_inst   // the instruction
 );
 
 //the instructions loaded from the hex file
