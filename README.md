@@ -56,15 +56,23 @@ folder holding all of them and the same two commands work everywhere, ALU includ
 The .out and .vcd files are just compiler and simulation output, so they are in .gitignore and
 not committed. The commands above make them again.
 
-## Running the cocotb test
+## Running the cocotb tests
 
-The ALU folder also has a cocotb test, test_alu.py, with a Makefile that runs it on Icarus. cd in
-and run make:
+The ALU folder and the CPU folder each have a cocotb test, test_alu.py and test_cpu.py, with a
+Makefile that runs it on Icarus. cd in and run make:
 
 ```
 cd Combinational/ALU
 make
 ```
+
+```
+cd CPU
+make
+```
+
+The CPU Makefile adds -grelative-include to the compile arguments, for the same include reason as
+in the CPU section.
 
 It needs cocotb (pip install cocotb) and GNU make. cocotb's Makefiles also use sh and uname, so on
 Windows make has to see Git's Unix tools in C:\Program Files\Git\usr\bin, either from a Git Bash
@@ -208,7 +216,7 @@ here is 32 bits.
 | data_mem.v | `data_mem` | `datamem_tb.v` | Data memory, depth words of width bits (32 by default). Writes happen on the clock edge when mem_rw = 1, reads are combinational. Like the instruction memory it drops the bottom two bits of the byte address to pick the word. |
 | imm_gen.v | `imm_gen` | `imgen_tb.v` | Immediate generator. Looks at the opcode and pulls the immediate out of the instruction for I, S, B, U and J type, sign extended to 32 bits. B and J get a 0 added at the bottom since their offsets are always even. R type has no immediate so it gives 0. |
 | controlUnit.v | `control_unit` | `control_unit_tb.v` | Control unit. Decodes the opcode, funct3 and funct7 into the ALU op and the control signals: alu_src (rs2 or the immediate into the ALU), mem_rw (write data memory), mem_reg (ALU result or data memory into rd), reg_write and branch_step. Handles the nine instructions, any other opcode gets the defaults and writes nothing. |
-| cpu_top.v | `cpu_top` | `cputop_tb.v` | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. It has debug outputs for what gets written back each cycle, the PC, reg_write, the rd address and the data going into it, since a top level with no outputs gets optimized away completely by synthesis. |
+| cpu_top.v | `cpu_top` | `cputop_tb.v`, `test_cpu.py` | The whole single cycle datapath. The PC feeds the instruction memory, the instruction goes to the control unit, immediate generator and register file, the ALU runs at 32 bits on rs1 and either rs2 or the immediate, and the result goes to the data memory address or back to rd. For beq the ALU subtracts and if zero is set the PC adds the immediate instead of 4. It has debug outputs for what gets written back each cycle, the PC, reg_write, the rd address and the data going into it, since a top level with no outputs gets optimized away completely by synthesis. |
 
 combined_tb.v connects the program counter to the instruction memory, steps the PC by 4 and prints
 the address and the instruction fetched from it, so it checks the fetch part of the datapath. It
@@ -222,6 +230,18 @@ each supported instruction plus a lui to check it falls back to the defaults.
 cputop_tb.v resets the core, runs it for 15 clocks and on every falling edge prints the
 instruction, the PC, what is being written to which register, the data memory signals and the
 branch and zero signals, so each instruction can be followed through the datapath.
+
+test_cpu.py is the cocotb test for the whole core. It reads iData.hex itself and runs the same
+program through a Python model of the nine instructions, with its own registers, data memory and
+PC. Every cycle it compares the model against the core's debug outputs: the PC, reg_write, and for
+instructions that write a register, the rd address and the data going into it. So a wrong ALU
+result, a wrong decode or a branch going to the wrong place fails on the cycle it happens.
+
+To check it can actually catch bugs I broke the core on purpose. Making beq ignore the zero flag,
+so every branch is taken, still passed at first, because every branch in the program happened to
+be taken. That was a coverage hole in the program, not the test. Adding a beq that is not taken
+(x1 = 5, x2 = 3) exposed it, the test failed on that branch with model PC 56 and CPU PC 60, and
+passed again with the bug removed.
 
 cpu_top.v pulls in the ALU and the register file from Combinational/ and Sequential/, and CPU/ sits
 one folder higher than those, so their own includes only resolve with -grelative-include:
@@ -277,7 +297,7 @@ The core is wired together in cpu_top.v and runs all nine instructions: add, sub
 addi, lw, sw and beq. The ALU's existing 3 bit op already covers everything they need, add for
 addi, lw and sw, and sub for beq, which branches when the zero flag is set.
 
-cputop_tb.v runs a program that uses all nine and prints every cycle, and the registers and data
-memory end up with the right values. It also goes through Yosys and nextpnr on an iCE40 HX8K. Next
-is making the testbench check itself, comparing the registers and data memory at the end against
-the expected values instead of reading the printout, then the same checks in cocotb.
+The core runs a program that uses all nine, test_cpu.py checks it against a Python model every
+cycle, and it goes through Yosys and nextpnr on an iCE40 HX8K. What is left is checking stores
+directly, since right now a sw only gets checked through the lw that reads it back, and comparing
+the registers and data memory at the end of the program against the model.
